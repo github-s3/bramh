@@ -16,7 +16,17 @@ jobs:
       AWS_REGION: ${{ secrets.AWS_REGION }}
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Run a one-line script
+    - uses: actions/checkout@master
+    - name: Create $(date +'%Y-%m-%dT%H:%M:%S') zip
+      run: zip -r $(date +'%Y-%m-%dT%H:%M:%S').zip . --exclude '.git*/*' --exclude '.github*/*'
+    - uses: jakejarvis/s3-sync-action@v0.3.1
 
-      run: echo Hello from Octo Organization
+      with:
+        args: --follow-symlinks --exclude '*' --include '*.zip'
+
+    - name: Display the required info.
+      run: |
+        echo "Github Ref:$GITHUB_REF_NAME"
+        echo "Github Repo:$GITHUB_REPOSITORY"
+        echo "builddate=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+        echo "NOW=$(date +'%Y-%m-%dT%H:%M:%S')" >> $GITHUB_OUTPUT
