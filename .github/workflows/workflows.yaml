@@ -3,6 +3,8 @@ name: sync git to s3.
 on:
   push:
     branches: [main, develop, test]
+  pull_request:
+    branches: [main, develop, test]
 
 jobs:
   build:
