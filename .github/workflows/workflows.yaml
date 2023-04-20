@@ -1,8 +1,8 @@
-name: sync git to s3.
+name: sync git to s3
 
 on:
   push:
-    branches: '*'
+    branches: '**'
   #pull_request:
 # branches: '**'
 
