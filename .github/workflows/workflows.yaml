@@ -10,7 +10,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}/${{ secrets.AWS_S3_BUCKET }}/$GITHUB_REPOSITORY/${{ steps.branch-name.outputs.current_branch }}/$GITHUB_REF_NAME/$(date +'%Y-%m-%d')
+      AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}/${{ secrets.AWS_S3_BUCKET }}/$GITHUB_REPOSITORY/$GIT_BRANCH/$GITHUB_REF_NAME/$(date +'%Y-%m-%d')
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_REGION: ${{ secrets.AWS_REGION }}
@@ -26,7 +26,9 @@ jobs:
 
     - name: Display the required info.
       run: |
-        echo "Current Branch: ${{ steps.branch-name.outputs.current_branch }}"
+        # Short name for current branch. For PRs, use target branch (base ref)
+        GIT_BRANCH=${GITHUB_BASE_REF:-${GITHUB_REF#refs/heads/}}
+        echo "GIT_BRANCH=$GIT_BRANCH" >> $GITHUB_ENV
         echo "Github Ref:$GITHUB_REF_NAME"
         echo "Github Repo:$GITHUB_REPOSITORY"
         echo "builddate=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
