@@ -2,12 +2,9 @@ name: sync git to s3
 
 on:
   push:
-    branches:
-    - main
-    - test
-    - develop
-  #pull_request:
-# branches: '**'
+    branches: '**'
+  pull_request:
+    branches: '**'
 
 jobs:
   build:
