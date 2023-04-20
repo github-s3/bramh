@@ -1,87 +1,33 @@
-name: CI
+name: sync git to s3
 
 on:
   push:
-    tags:
-    - '*'
-    branches:
-    - main
-  pull_request_target:
+    branches: '**'
   pull_request:
-    branches:
-    - main
+    branches: '**'
 
 jobs:
-  test:
-    name: Test branch-name
-    runs-on: ${{ matrix.platform }}
-    strategy:
-      fail-fast: false
-      matrix:
-        platform: [ubuntu-latest, windows-latest, macos-latest, macos-11, windows-2022]
+  build:
+    runs-on: ubuntu-latest
+    env:
+      AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}/${{ secrets.AWS_S3_BUCKET }}/$GITHUB_REPOSITORY/${{ steps.branch-name.outputs.current_branch }}/$GITHUB_REF_NAME/$(date +'%Y-%m-%d')
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3.5.2
-    - name: Dump GitHub context
-      env:
-        GITHUB_CONTEXT: ${{ toJson(github) }}
-      run: echo "$GITHUB_CONTEXT"
-    - name: Run test
-      id: branch-name
-      uses: ./
-    - name: Show output
+    - uses: actions/checkout@v3
+    - name: Create $(date +'%Y-%m-%dT%H:%M:%S') zip
+      run: zip -r $(date +'%Y-%m-%dT%H:%M:%S').zip . --exclude '.git*/*' --exclude '.github*/*'
+    - uses: jakejarvis/s3-sync-action@v0.3.1
+
+      with:
+        args: --follow-symlinks --exclude '*' --include '*.zip'
+
+    - name: Display the required info.
       run: |
-        echo "Default Branch: ${{ steps.branch-name.outputs.default_branch }}"
         echo "Current Branch: ${{ steps.branch-name.outputs.current_branch }}"
-        echo "Base Ref: ${{ steps.branch-name.outputs.base_ref_branch }}"
-        echo "Head Ref: ${{ steps.branch-name.outputs.head_ref_branch }}"
-        echo "Ref: ${{ steps.branch-name.outputs.ref_branch }}"
-        echo "Is Default: ${{ steps.branch-name.outputs.is_default }}"
-        echo "Is Tag: ${{ steps.branch-name.outputs.is_tag }}"
-        echo "Current tag: ${{ steps.branch-name.outputs.tag }}"
-    - name: Test is_default output for pull request
-      if: (github.event_name == 'pull_request' || github.event_name == 'pull_request_target') && steps.branch-name.outputs.is_tag == 'false' && steps.branch-name.outputs.is_default != 'false'
-      run: |
-        echo "Is default is invalid: ${{ steps.branch-name.outputs.is_default }}"
-        exit 1
-    - name: Test is_default output for non pull request
-      if: github.event_name != 'pull_request' && github.event_name != 'pull_request_target' && steps.branch-name.outputs.is_tag == 'false' && steps.branch-name.outputs.is_default != 'true'
-      run: |
-        echo "Is default is invalid: ${{ steps.branch-name.outputs.is_default }}"
-        exit 1
-    - name: Test base_ref_branch output
-      if: (github.event_name == 'pull_request' || github.event_name == 'pull_request_target') && steps.branch-name.outputs.is_tag == 'false' && !steps.branch-name.outputs.base_ref_branch
-      run: |
-        echo "Base ref unset: ${{ steps.branch-name.outputs.base_ref_branch }}"
-        exit 1
-    - name: Test head_ref output
-      if: (github.event_name == 'pull_request' || github.event_name == 'pull_request_target') && steps.branch-name.outputs.is_tag == 'false' && !steps.branch-name.outputs.head_ref_branch
-      run: |
-        echo "Head ref unset: ${{ steps.branch-name.outputs.head_ref_branch }}"
-        exit 1
-    - name: Test ref_branch output
-      if: "!steps.branch-name.outputs.ref_branch && steps.branch-name.outputs.is_tag == 'false'"
-      run: |
-        echo "Ref unset: ${{ steps.branch-name.outputs.ref_branch }}"
-        exit 1
-    - name: Test current_branch output for pull_request or pull_request_target event.
-      if: (github.event_name == 'pull_request' || github.event_name == 'pull_request_target') && steps.branch-name.outputs.is_tag == 'false' && !steps.branch-name.outputs.current_branch
-      run: |
-        echo "Current branch unset: ${{ steps.branch-name.outputs.current_branch }}"
-        exit 1
-    - name: Test current_branch output for push event.
-      if: github.event_name == 'push' && steps.branch-name.outputs.is_tag == 'false' && !steps.branch-name.outputs.current_branch
-      run: |
-        echo "Current branch unset: ${{ steps.branch-name.outputs.current_branch }}"
-        exit 1
-    - name: Test current_branch output for tag based push event.
-      if: github.event_name == 'push' && steps.branch-name.outputs.is_tag == 'true' && !steps.branch-name.outputs.base_ref_branch
-      run: |
-        echo "Base ref unset: ${{ steps.branch-name.outputs.base_ref_branch }}"
-        exit 1
-    - name: Test tag output for tag based push event.
-      if: github.event_name == 'push' && steps.branch-name.outputs.is_tag == 'true' && !steps.branch-name.outputs.tag
-      run: |
-        echo "Current tag unset: ${{ steps.branch-name.outputs.tag }}"
-        exit 1
+        echo "Github Ref:$GITHUB_REF_NAME"
+        echo "Github Repo:$GITHUB_REPOSITORY"
+        echo "builddate=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+        echo "NOW=$(date +'%Y-%m-%dT%H:%M:%S')" >> $GITHUB_OUTPUT
