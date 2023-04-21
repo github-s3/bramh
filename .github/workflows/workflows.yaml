@@ -2,7 +2,9 @@ name: sync git to s3
 
 on:
   push:
-    branches: ['**', '!merge']
+    branches:
+    - '**' # matches every branch
+    - '!merge' # excludes master
 
   pull_request:
     branches: '**'
