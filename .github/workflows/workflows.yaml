@@ -11,11 +11,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}/${{ secrets.AWS_S3_BUCKET }}/$GITHUB_REPOSITORY/$PAYLOAD/$GITHUB_REF_NAME/$(date +'%Y-%m-%d')
+      AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}/${{ secrets.AWS_S3_BUCKET }}/$GITHUB_REPOSITORY/$GITHUB_REF#refs/heads/$(date +'%Y-%m-%d')
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_REGION: ${{ secrets.AWS_REGION }}
-      PAYLOAD: ${{toJson(github.event)}}
 
     steps:
     - uses: actions/checkout@v3
@@ -28,8 +27,7 @@ jobs:
 
     - name: Display the required info.
       run: |
-        echo "Github Ref:$GITHUB_REF_NAME"
+        echo "Github Ref:$GITHUB_REF_#refs/heads"
         echo "Github Repo:$GITHUB_REPOSITORY"
         echo "builddate=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
         echo "NOW=$(date +'%Y-%m-%dT%H:%M:%S')" >> $GITHUB_OUTPUT
-        echo "Event Payload:$PAYLOAD"
