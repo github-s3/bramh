@@ -11,7 +11,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}/${{ secrets.AWS_S3_BUCKET }}/$GITHUB_REPOSITORY/$GITHUB_REF_NAME/${{GITHUB_HEAD}}" == "refs/heads/"*]]; then echo "${{GITHUB_REF/REFS\/HEADS\//}}"; else echo "${{GITHUB_HEAD_REF}}; fi)/$(date +'%Y-%m-%d')
+      AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}/${{ secrets.AWS_S3_BUCKET }}/$GITHUB_REPOSITORY/$GITHUB_REF_NAME/${{GITHUB_REF}}" == "refs/heads/"*]]; then echo "${{GITHUB_REF/REFS\/HEADS\//}}"; else echo "${{GITHUB_HEAD_REF}}; fi)/$(date +'%Y-%m-%d')
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_REGION: ${{ secrets.AWS_REGION }}
@@ -30,4 +30,4 @@ jobs:
         echo "Github Repo:$GITHUB_REPOSITORY"
         echo "builddate=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
         echo "NOW=$(date +'%Y-%m-%dT%H:%M:%S')" >> $GITHUB_OUTPUT
-        echo "Github Ref:$(if [[ "${{GITHUB_HEAD}}" == "refs/heads/"*]]; then echo "${{GITHUB_REF/REFS\/HEADS\//}}"; else echo "${{GITHUB_HEAD_REF}}; fi)"
+        echo "Github Ref:$(if [[ "${{GITHUB_REF}}" == "refs/heads/"*]]; then echo "${{GITHUB_REF/REFS\/HEADS\//}}"; else echo "${{GITHUB_HEAD_REF}}; fi)"
